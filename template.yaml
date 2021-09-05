@@ -1,0 +1,29 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8scustomazureallowedfqdn
+spec:
+  crd:
+    spec:
+      names:
+        kind: k8sCustomAzureAllowedFqdn
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          properties:
+            allowedNamespaceFqdnPairs:
+              type: list
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8scustomazureallowedfqdn
+
+        violation[{"msg": msg}] {
+          allowed_namespace_fqdn_pairs := input.parameters.allowedNamespaceFqdnPairs
+          ingress := {
+            "namespace": ,
+            "fqdn":
+          }
+          ingress == allowed_namespace_fqdn_pairs[_]
+          msg := sprintf("Ingress with FQDN %v for namespace %v has not been allowed.", [ingress.namespace, ingress.fqdn])
+        }
